@@ -16,6 +16,7 @@ _грузовой автомобиль_, _пассажирский трансп�
 - Лесниченко Макар Олегович — [@makarles](https://t.me/makarles), [makarles](https://github.com/makarles)
 - Назаров Максим Олегович — [@MONazarov](https://t.me/MONazarov), [MirnMax](https://github.com/MirnMax)
 - Нюнин Николай Андреевич — [@n1kolay177](https://t.me/n1kolay177), [NikolayNyunin](https://github.com/NikolayNyunin)
+- Сорокин Иван Михайлович — [@IVANSOR0KIN](https://t.me/IVANSOR0KIN), [ivansor0kin](https://github.com/ivansor0kin)
 
 ## Куратор
 - Козлов Кирилл — [@dedpe](https://t.me/dedpe), [KozlovKY](https://github.com/KozlovKY)
