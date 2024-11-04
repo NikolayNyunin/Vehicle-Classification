@@ -1,21 +1,20 @@
 # EDA
 
-## Ветка 'makar':
+## Ветка 'nikolay':
 
 ### Распределение изображений по классам:
 |    Класс    | Число изображений |
 |:-----------:|:-----------------:|
-|articulated_truck | 22752 |
-|background	| 3520 |
-|bicycle	|1215 |
-|bus	| 2473 | 
-|car |	16573 |
-|motorcycle |	4729 |
-|non-motorized_vehicle |	6149 |
-|pedestrian |	2134 |
-|pickup_truck |	32274 |
-|single_unit_truck |	6023 |
-|work_van |	97842 |
+|     SUV     |       22752       |
+| convertible |       3520        |
+|   estate    |       1215        |
+|  fastback   |       2473        |
+|  hatchback  |       16573       |
+|   minibus   |       4729        |
+|   minivan   |       6149        |
+|   pickup    |       2134        |
+|    sedan    |       32274       |
+|   sports    |       6023        |
 |  **TOTAL**  |     **97842**     |
 
 ![Распределение автомобилей по типам кузова](EDA/counts_nikolay.png)
