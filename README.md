@@ -1,7 +1,21 @@
 # Классификация транспортного средства по типу кузова
 
-![Python](https://img.shields.io/badge/python-v3.11+-blue.svg)
-![GitHub Contributors](https://img.shields.io/github/contributors/NikolayNyunin/Vehicle-Classification)
+![Python](https://img.shields.io/badge/python-v3.12+-blue.svg)
+![GitHub Contributors](https://img.shields.io/badge/contributors-4-green.svg)
+
+[//]: # (![GitHub Contributors]&#40;https://img.shields.io/github/contributors/NikolayNyunin/Vehicle-Classification&#41;)
+[//]: # (TODO: uncomment when the repository becomes public)
+
+## Оглавление
+
+- [Описание](#описание)
+- [Состав команды](#состав-команды)
+- [Куратор](#куратор)
+- [Структура проекта](#структура-проекта)
+- [Установка зависимостей](#установка-зависимостей)
+- [Запуск FastAPI-сервера](#запуск-fastapi-сервера)
+
+## Описание
 
 Годовой проект команды **№47**.
 
@@ -10,15 +24,39 @@
 _грузовой автомобиль_, _пассажирский транспорт_, _спецтранспорт_. После реализации классификатора планируется применить
 его в связке с детектором транспортных средств и сравнить его качество с встроенным в детектор классификатором.
 
-Примерные этапы работы перечислены в файле `checkpoints.md`.
-
-Описание собранных данных находится в файле `dataset.md`, а выводы на основе EDA — в файле `EDA.md`.
-
 ## Состав команды
+
 - Лесниченко Макар Олегович — [@makarles](https://t.me/makarles), [makarles](https://github.com/makarles)
 - Назаров Максим Олегович — [@MONazarov](https://t.me/MONazarov), [MirnMax](https://github.com/MirnMax)
 - Нюнин Николай Андреевич — [@n1kolay177](https://t.me/n1kolay177), [NikolayNyunin](https://github.com/NikolayNyunin)
 - Сорокин Иван Михайлович — [@IVANSOR0KIN](https://t.me/IVANSOR0KIN), [ivansor0kin](https://github.com/ivansor0kin)
 
 ## Куратор
+
 - Козлов Кирилл — [@dedpe](https://t.me/dedpe), [KozlovKY](https://github.com/KozlovKY)
+
+## Структура проекта
+
+- Файл `README.md` - основной Markdown-файл с описанием проекта **_(данный файл)_**.
+- Файл `checkpoints.md` - описание чекпоинтов (этапов работы) по проекту.
+- Файл `dataset.md` - описание наборов данных, выбранных для решения поставленной задачи.
+- Папка `EDA` - Jupyter-ноутбуки с EDA по разным датасетам и картинки для визуализации данных.
+- Файл `EDA.md` - выводы на основе проведённого EDA.
+- Папка `baseline` - Jupyter-ноутбуки и прочие файлы, содержащие бейзлайн-модели **(WORK IN PROGRESS)**.
+- Файл `baseline.md` - описание бейзлайн-модели и мотивации её выбора **(WORK IN PROGRESS)**.
+- Файлы `.gitignore`, `pyproject.toml` и `poetry.lock` - Служебные файлы Git и Poetry.
+
+## Установка зависимостей
+
+Для удобного запуска проекта рекомендуется наличие менеджера зависимостей Poetry.
+
+Если Poetry установлен, для создания виртуального окружения
+и установки всех необходимых проекту зависимостей можно воспользоваться командой:
+
+```bash
+poetry install
+```
+
+## Запуск FastAPI-сервера
+
+**(WORK IN PROGRESS)**
