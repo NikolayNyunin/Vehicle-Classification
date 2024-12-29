@@ -4,10 +4,14 @@ from models.baseline.inference import inference_one_file
 from pydantic import BaseModel
 from fastapi import APIRouter, HTTPException, UploadFile
 from fastapi.encoders import jsonable_encoder
+from loguru import logger
 
 from typing import List
 from http import HTTPStatus
 from contextlib import asynccontextmanager
+
+# Добавление файла логов с ротацией
+logger.add('../logs/fastapi.log', rotation='100 MB')
 
 # Сохранённые модели
 saved_models = {}
@@ -29,13 +33,17 @@ def load_baseline_model() -> dict:
 async def lifespan(router: APIRouter):
     """Функция жизненного цикла приложения."""
 
-    # Загрузка бейзлайн модели
+    # Загрузка бейзлайн-модели
     saved_models[0] = load_baseline_model()
+
+    logger.info('Baseline model loaded')
 
     yield
 
     # Удаление всех моделей
     saved_models.clear()
+
+    logger.info('Saved models cleared')
 
 
 router = APIRouter(lifespan=lifespan)
@@ -98,6 +106,8 @@ class MessageResponse(BaseModel):
 async def fit(request: FitRequest):
     """Обучение и сохранение новой модели."""
 
+    logger.info('"/fit" requested')
+
     json_request = jsonable_encoder(request)
     name = json_request['name']
     description = json_request['description']
@@ -109,11 +119,15 @@ async def fit(request: FitRequest):
         new_model = load_baseline_model()['model']
 
     except Exception as e:
+        logger.error(f'"/fit" failed: {str(e).capitalize()}')
+
         raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY, detail=str(e).capitalize())
 
     else:
         new_id = max(saved_models.keys()) + 1
         saved_models[new_id] = {'name': name, 'description': description, 'model': new_model}
+
+        logger.success('"/fit" responded successfully')
 
         return {'message': f'New model trained and saved with id {new_id}'}
 
@@ -122,6 +136,8 @@ async def fit(request: FitRequest):
 async def fine_tune(request: FineTuneRequest):
     """Дообучение существующей модели."""
 
+    logger.info('"/fine_tune" requested')
+
     json_request = jsonable_encoder(request)
     model_id = json_request['id']
     name = json_request['name']
@@ -129,6 +145,8 @@ async def fine_tune(request: FineTuneRequest):
     hyperparameters = json_request['hyperparameters']
 
     if model_id not in saved_models:
+        logger.error(f'"/fine_tune" failed: Model with id {model_id} not found')
+
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=f'Model with id {model_id} not found')
 
     try:
@@ -137,11 +155,15 @@ async def fine_tune(request: FineTuneRequest):
         new_model = load_baseline_model()['model']
 
     except Exception as e:
+        logger.error(f'"/fine_tune" failed: {str(e).capitalize()}')
+
         raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY, detail=str(e).capitalize())
 
     else:
         new_id = max(saved_models.keys()) + 1
         saved_models[new_id] = {'name': name, 'description': description, 'model': new_model}
+
+        logger.success('"/fine_tune" responded successfully')
 
         return {'message': f'Model with id {model_id} fine-tuned and saved with id {new_id}'}
 
@@ -150,13 +172,19 @@ async def fine_tune(request: FineTuneRequest):
 async def predict(files: List[UploadFile]):
     """Получение предсказаний при помощи модели."""
 
+    logger.info('"/predict" requested')
+
     if not active_model:
+        logger.error('"/predict" failed: No active model')
+
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='No active model, call /set first')
 
     predictions = []
 
     for file in files:
         if not file.filename.endswith(('.png', '.jpg', '.jpeg', '.bmp', '.tiff')):
+            logger.error(f'"/predict" failed: File type not supported')
+
             raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY, detail='File type not supported')
 
         try:
@@ -165,7 +193,11 @@ async def predict(files: List[UploadFile]):
             predictions.append(prediction)
 
         except Exception as e:
+            logger.error(f'"/predict" failed: {str(e).capitalize()}')
+
             raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY, detail=str(e).capitalize())
+
+    logger.success('"/predict" responded successfully')
 
     return predictions
 
@@ -173,6 +205,9 @@ async def predict(files: List[UploadFile]):
 @router.get('/models', response_model=List[ModelInfo])
 async def list_models():
     """Получение списка моделей."""
+
+    logger.info('"/models" requested')
+    logger.success('"/models" responded successfully')
 
     return [
         {
@@ -188,10 +223,16 @@ async def list_models():
 async def set_model(request: SetRequest):
     """Выбор активной модели."""
 
+    logger.info('"/set" requested')
+
     if request.id not in saved_models:
+        logger.error(f'"/set" failed: Model with id {request.id} not found')
+
         raise HTTPException(HTTPStatus.NOT_FOUND, f'Model with id {request.id} not found')
 
     active_model['id'] = request.id
     active_model['model_dict'] = saved_models[request.id]
+
+    logger.success('"/set" responded successfully')
 
     return {'message': f'Model with id {request.id} successfully set active'}
