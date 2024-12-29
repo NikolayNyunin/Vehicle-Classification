@@ -10,10 +10,19 @@ from http import HTTPStatus
 from contextlib import asynccontextmanager
 
 # Сохранённые модели
-models = {}
+saved_models = {}
 
 # Активная модель
 active_model = {}
+
+
+def load_baseline_model() -> dict:
+    """Загрузка бейзлайн-модели."""
+
+    name = 'CustomResNet18 (BASELINE)'
+    description = '...'
+    model = load_model('../data/best_checkpoint_val_p_0.8277_r_0.7873_f1_0.8043.pt')
+    return {'name': name, 'description': description, 'model': model}
 
 
 @asynccontextmanager
@@ -21,35 +30,40 @@ async def lifespan(router: APIRouter):
     """Функция жизненного цикла приложения."""
 
     # Загрузка бейзлайн модели
-    name = 'CustomResNet18 (BASELINE)'
-    description = '...'
-    model = load_model('../data/best_checkpoint_val_p_0.8277_r_0.7873_f1_0.8043.pt')
-    models[0] = {'name': name, 'description': description, 'model': model}
+    saved_models[0] = load_baseline_model()
 
     yield
 
     # Удаление всех моделей
-    models.clear()
+    saved_models.clear()
 
 
 router = APIRouter(lifespan=lifespan)
 
 
-class FitRequest(BaseModel):
-    """Запрос обучения модели."""
+class Hyperparameters(BaseModel):
+    """Гиперпараметры для обучения/дообучения."""
 
-    name: str  # Название модели
-    description: str  # Описание модели
-    batch_size: int  # Гиперпараметр - размер батча
-    pass
+    batch_size: int  # Размер батча
+    n_epochs: int  # Число эпох обучения
+    eval_every: int  # Частота оценки
+
+
+class FitRequest(BaseModel):
+    """Запрос обучения новой модели."""
+
+    name: str  # Название новой модели
+    description: str  # Описание новой модели
+    hyperparameters: Hyperparameters  # Гиперпараметры для обучения
 
 
 class FineTuneRequest(BaseModel):
-    """Запрос дообучения модели."""
+    """Запрос дообучения существующей модели."""
 
-    id: int  # ID модели
-    batch_size: int  # Гиперпараметр - размер батча
-    pass
+    id: int  # ID модели для дообучения
+    name: str  # Название новой модели
+    description: str  # Описание новой модели
+    hyperparameters: Hyperparameters  # Гиперпараметры для дообучения
 
 
 class SetRequest(BaseModel):
@@ -82,34 +96,54 @@ class MessageResponse(BaseModel):
 
 @router.post('/fit', response_model=MessageResponse, status_code=HTTPStatus.CREATED)
 async def fit(request: FitRequest):
-    """Обучение и сохранение модели."""
+    """Обучение и сохранение новой модели."""
 
     json_request = jsonable_encoder(request)
+    name = json_request['name']
+    description = json_request['description']
+    hyperparameters = json_request['hyperparameters']
 
     try:
-        pass
-        # TODO: implement
+        # TODO: add model training
+        # new_model = train_model(hyperparameters)
+        new_model = load_baseline_model()['model']
 
     except Exception as e:
         raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY, detail=str(e).capitalize())
 
-    return {'message': 'Model trained and saved'}
+    else:
+        new_id = max(saved_models.keys()) + 1
+        saved_models[new_id] = {'name': name, 'description': description, 'model': new_model}
+
+        return {'message': f'New model trained and saved with id {new_id}'}
 
 
 @router.post('/fine_tune', response_model=MessageResponse)
 async def fine_tune(request: FineTuneRequest):
-    """Дообучение модели."""
+    """Дообучение существующей модели."""
 
     json_request = jsonable_encoder(request)
+    model_id = json_request['id']
+    name = json_request['name']
+    description = json_request['description']
+    hyperparameters = json_request['hyperparameters']
+
+    if model_id not in saved_models:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=f'Model with id {model_id} not found')
 
     try:
-        pass
-        # TODO: implement
+        # TODO: add model fine tuning
+        # new_model = fine_tune_model(saved_models[model_id], hyperparameters)
+        new_model = load_baseline_model()['model']
 
     except Exception as e:
         raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY, detail=str(e).capitalize())
 
-    return {'message': f'Model with id {request.id} fine-tuned'}
+    else:
+        new_id = max(saved_models.keys()) + 1
+        saved_models[new_id] = {'name': name, 'description': description, 'model': new_model}
+
+        return {'message': f'Model with id {model_id} fine-tuned and saved with id {new_id}'}
 
 
 @router.post('/predict', response_model=List[PredictResponse])
@@ -146,7 +180,7 @@ async def list_models():
             'name': model_dict['name'],
             'description': model_dict['description']
          }
-        for model_id, model_dict in models.items()
+        for model_id, model_dict in saved_models.items()
     ]
 
 
@@ -154,10 +188,10 @@ async def list_models():
 async def set_model(request: SetRequest):
     """Выбор активной модели."""
 
-    if request.id not in models:
+    if request.id not in saved_models:
         raise HTTPException(HTTPStatus.NOT_FOUND, f'Model with id {request.id} not found')
 
     active_model['id'] = request.id
-    active_model['model_dict'] = models[request.id]
+    active_model['model_dict'] = saved_models[request.id]
 
     return {'message': f'Model with id {request.id} successfully set active'}
