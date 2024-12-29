@@ -1,5 +1,19 @@
-import torch
 import numpy as np
+import pandas as pd
+from tqdm import tqdm
+import cv2
+import albumentations as A
+from albumentations.pytorch import ToTensorV2
+from sklearn.model_selection import train_test_split
+import torch
+from torch import nn, optim
+from torch.utils.data import Dataset, DataLoader, WeightedRandomSampler
+from torchmetrics.classification import Precision, Recall, F1Score
+from torchvision.models import resnet18
+
+from typing import Callable, Type, Optional
+from dataclasses import dataclass
+from collections import Counter
 
 train_on_gpu = torch.cuda.is_available()
 
@@ -8,64 +22,10 @@ if not train_on_gpu:
 else:
     print('CUDA is available!')
 
-
-import numpy as np
-from tqdm import tqdm, tqdm_notebook
-from typing import Callable, Optional, Type
-import cv2
-from torch.utils.data import Dataset, DataLoader
-import torch.nn as nn
-from matplotlib import colors, pyplot as plt
-import torch
-import torch.nn.functional as F
-import torch.optim as optim
-from dataclasses import dataclass
-from torch.utils.data import DataLoader
-from torch.optim import Adam
-import tqdm
-import matplotlib.pyplot as plt
-import albumentations as A
-from albumentations.pytorch import ToTensorV2
-import numpy as np
-import pandas as pd
-from datetime import datetime
-from typing import Callable, Optional, Type
-import torchmetrics
-from sklearn.model_selection import train_test_split
-from collections import Counter
-from torch.utils.data import WeightedRandomSampler
-from torchmetrics.classification import Precision, Recall, F1Score
-from torchvision.models import resnet18
-
-
-DATA_MODES = ['train', 'val', 'test']
 SEED = 42
 NUM_CLASSES = 10
 IMG_SIZE = 224
 BATCH_SIZE = 256
-
-data = pd.read_csv('data.csv', index_col=0).reset_index(drop=True)
-data['type'] = data['type'] - 1
-
-
-train_val_df, test_df = train_test_split(
-    data,
-    test_size=0.2,
-    stratify=data['type'],
-    random_state=SEED
-)
-
-train_df, val_df = train_test_split(
-    train_val_df,
-    test_size=0.2,
-    stratify=train_val_df['type'],
-    random_state=SEED
-)
-
-
-print(f"Train size: {len(train_df)}")
-print(f"Validation size: {len(val_df)}")
-print(f"Test size: {len(test_df)}")
 
 
 class AlbumentationsTransform:
@@ -76,11 +36,12 @@ class AlbumentationsTransform:
         img = np.array(img)
         augmented = self.transform(image=img)
         return augmented['image']
-    
+
+
 class CarsDataset(Dataset):
     """
-    Датасет с картинками, который паралельно подгружает их из папок
-    производит скалирование и превращение в торчевые тензоры
+    Датасет с картинками, который параллельно подгружает их из папок,
+    производит масштабирование и превращение в тензоры.
     """
     def __init__(self, data, mode, img_size):
         super().__init__()
@@ -102,26 +63,26 @@ class CarsDataset(Dataset):
     def train_transforms(self):
         transforms = A.Compose([
             A.Resize(height=self.img_size, width=self.img_size, interpolation=cv2.INTER_LINEAR),
-            
+
             # Горизонтальное отражение
             A.HorizontalFlip(p=0.3),
-        
+
             # Вращение от -40 до +40 градусов
             A.Rotate(limit=40, p=0.3),
-        
+
             # Случайное изменение яркости и контраста
             A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=0.3),
-        
+
             # Эффект размытия
             A.Blur(blur_limit=(3, 7), p=0.3),
-        
+
             # Случайное зануление прямоугольных областей
             A.CoarseDropout(max_holes=3, max_height=40, max_width=40, p=0.3),
-            
+
             A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], max_pixel_value=255),
             ToTensorV2()
         ])
-        
+
         return transforms
 
     def __getitem__(self, index):
@@ -141,26 +102,11 @@ class CarsDataset(Dataset):
             transform = AlbumentationsTransform(transform=transforms)
             image = transform(image)
         return image, torch.tensor(label, dtype=torch.long)
-    
 
-dataset = CarsDataset(data=data, mode='train', img_size=IMG_SIZE)
-
-train_dataset = CarsDataset(data=train_df, mode='train', img_size=IMG_SIZE)
-val_dataset = CarsDataset(data=val_df, mode='val', img_size=IMG_SIZE)
-test_dataset = CarsDataset(data=test_df, mode='test', img_size=IMG_SIZE)
-train_labels = train_dataset.data['type']
-
-print(f'Размер датасета train: {len(train_dataset)}')
-print(f'Размер датасета test: {len(test_dataset)}')
-print(f'Размер датасета val: {len(val_dataset)}')
-
-
-
-
-Counter(train_labels)
 
 def make_weighted_loader(dataset, labels, batch_size, drop_last):
-    """ Функция для семплирования с учетом дисбаланса классов """
+    """Функция для сэмплирования с учетом дисбаланса классов."""
+
     label_counts = Counter(labels)
     label_weights = {label: 1.0 / count for label, count in label_counts.items()}
     sample_weights = np.array([label_weights[label] for label in labels])
@@ -174,25 +120,6 @@ def make_weighted_loader(dataset, labels, batch_size, drop_last):
     )
     return train_loader
 
-train_loader = make_weighted_loader(
-    train_dataset,
-    train_labels,
-    batch_size=BATCH_SIZE,
-    drop_last=True
-)
-val_loader = DataLoader(
-    val_dataset,
-    batch_size=BATCH_SIZE,
-    shuffle=False,
-    drop_last=True
-)
-test_loader = DataLoader(
-    test_dataset,
-    batch_size=BATCH_SIZE,
-    shuffle=False,
-    drop_last=True
-)
-
 
 def save_checkpoint(
     model,
@@ -203,6 +130,8 @@ def save_checkpoint(
     config=None,
     checkpoint_path='checkpoint.pt'
 ):
+    """Сохранение чекпоинта обучения."""
+
     checkpoint = {
         'optimizer_class': optimizer.__class__.__name__,
         'model_state_dict': model.state_dict(),
@@ -219,6 +148,8 @@ def load_checkpoint(
     model,
     checkpoint_path='checkpoint.pt'
 ):
+    """Загрузка чекпоинта обучения."""
+
     checkpoint = torch.load(checkpoint_path)
     config = checkpoint.get('config', None)
     print(config)
@@ -254,8 +185,11 @@ def load_checkpoint(
         'config': config,
     }
 
+
 @dataclass
 class Config:
+    """Конфигурация."""
+
     # Общие параметры
     device: str = 'cuda' if torch.cuda.is_available() else 'cpu'
     model_name: Optional[str] = 'default_name'
@@ -279,9 +213,10 @@ def train_loop(
     train_loader: DataLoader,
     val_loader: DataLoader,
     config: Config | None = None,
-    checkpoint: dict | None = None,
-    name: str = None
+    checkpoint: dict | None = None
 ):
+    """Обучение модели."""
+
     if config is None and checkpoint is None:
         raise ValueError("Config cannot be None when initializing without a checkpoint!")
 
@@ -303,14 +238,13 @@ def train_loop(
     loss_func = config.loss_func
     device = config.device
 
-
     # Метрики
     precision_metric = Precision(task='multiclass', num_classes=NUM_CLASSES, average='macro').to(device)
     recall_metric = Recall(task='multiclass', num_classes=NUM_CLASSES, average='macro').to(device)
     f1_metric = F1Score(task='multiclass', num_classes=NUM_CLASSES, average='macro').to(device)
 
     model.to(device)
-    # Отправляем опитмизатор на девайс
+    # Отправляем оптимизатор на устройство
     for state in optimizer.state.values():
         for k, v in state.items():
             if isinstance(v, torch.Tensor):
@@ -319,7 +253,7 @@ def train_loop(
     for epoch in range(config.n_epochs):
         print(f"Epoch #{epoch + 1}/#{config.n_epochs}")
 
-        for i, (img_batch, true_labels) in enumerate(tqdm.tqdm(train_loader)):
+        for i, (img_batch, true_labels) in enumerate(tqdm(train_loader)):
             step += 1
             img_batch, true_labels = img_batch.to(device), true_labels.to(device)
             true_labels = true_labels.to(torch.long)
@@ -330,7 +264,6 @@ def train_loop(
             loss_train.backward()
             optimizer.step()
 
-            
             if (i + 1) % config.eval_every == 0:
                 # Метрики на валидации
                 model.eval()
@@ -340,17 +273,17 @@ def train_loop(
                 f1_metric.reset()
 
                 with torch.no_grad():
-                    for i, (img_batch_val, true_labels_val) in enumerate(val_loader):
+                    for j, (img_batch_val, true_labels_val) in enumerate(val_loader):
                         img_batch_val, true_labels_val = img_batch_val.to(device), true_labels_val.to(device)
                         outputs = model(img_batch_val)
                         loss_val = loss_func(outputs, true_labels_val)
                         val_loss_total += loss_val.item()
 
                         # Обновляем метрики
-                        preds = torch.argmax(outputs, dim=1)
-                        precision_metric.update(preds, true_labels_val)
-                        recall_metric.update(preds, true_labels_val)
-                        f1_metric.update(preds, true_labels_val)
+                        predictions = torch.argmax(outputs, dim=1)
+                        precision_metric.update(predictions, true_labels_val)
+                        recall_metric.update(predictions, true_labels_val)
+                        f1_metric.update(predictions, true_labels_val)
 
                 torch.cuda.empty_cache()
 
@@ -358,7 +291,6 @@ def train_loop(
                 precision = precision_metric.compute().item()
                 recall = recall_metric.compute().item()
                 f1 = f1_metric.compute().item()
-
 
                 print(f"Step {step}: Val Loss={avg_val_loss:.4f}, Precision={precision:.4f}, Recall={recall:.4f}, F1={f1:.4f}")
                 if f1 > best_f1:
@@ -373,7 +305,6 @@ def train_loop(
                     )
                     print(f"New best model saved with F1={f1:.4f}")
                 model.train()
-
 
             save_checkpoint(
                 model=model,
@@ -393,9 +324,6 @@ def train_loop(
             config=vars(config),
             checkpoint_path='epoch_checkpoint.pt'
         )
-
-
-resnet = resnet18(weights='IMAGENET1K_V1')
 
 
 class CustomResNet18(nn.Module):
@@ -422,69 +350,125 @@ class CustomResNet18(nn.Module):
             nn.Dropout(0.3),
             nn.Linear(128, num_classes)
         )
-        
+
     def forward(self, x):
         x = self.resnet(x)
         x = self.flatten(x)
         x = self.out(x)
         return x
-    
-model = CustomResNet18(num_classes=NUM_CLASSES)
-print(model)
-
-config_res18_last_seq = Config(
-    model_name = 'try_start_train',
-    batch_size = 256,
-    n_epochs = 2,
-    eval_every = 200,
-    lr = 1e-3
-)
-
-# Инициализация модели
-model = CustomResNet18(num_classes=NUM_CLASSES)
-
-# Запуск обучения с нуля
-res = train_loop(
-    model=model,
-    train_loader=train_loader,
-    val_loader=val_loader,
-    config=config_res18_last_seq,
-    name="experiment_resnet18"
-)
 
 
-# Продолжение обучения
-model = CustomResNet18(num_classes=NUM_CLASSES)
-checkpoint = load_checkpoint(model, checkpoint_path='cur_checkpoint.pt')
+def load_model() -> torch.nn.Module:
+    """Загрузка модели из чекпоинта."""
 
-# Запуск дообучения
-res = train_loop(
-    model=model,
-    train_loader=train_loader,
-    val_loader=val_loader,
-    checkpoint=checkpoint,
-    name=f"continue_learn_"
-)
+    model = CustomResNet18(num_classes=NUM_CLASSES)
+    checkpoint = torch.load('../../data/best_checkpoint_val_p_0.8277_r_0.7873_f1_0.8043.pt',
+                            map_location=torch.device('cuda' if train_on_gpu else 'cpu'))
+    model.load_state_dict(checkpoint['model_state_dict'])
+
+    return model
 
 
-NUM_CLASSES = 10
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = CustomResNet18(num_classes=NUM_CLASSES)
-model.load_state_dict(torch.load('best_model_val_p_0.7876_r_0,7865_f1_0,7856.pt'))
-model.to(device)
-model.eval()
+if __name__ == '__main__':
+    data = pd.read_csv('data.csv', index_col=0).reset_index(drop=True)
+    data['type'] -= 1
 
-f1_metric = F1Score(task='multiclass', num_classes=NUM_CLASSES, average='macro').to(device)
+    train_val_df, test_df = train_test_split(
+        data,
+        test_size=0.2,
+        stratify=data['type'],
+        random_state=SEED
+    )
 
-with torch.no_grad():
-    for i, (img_batch_val, true_labels_val) in enumerate(test_loader):
-        img_batch_val, true_labels_val = img_batch_val.to(device), true_labels_val.to(device)
-        outputs = model(img_batch_val)
-        preds = torch.argmax(outputs, dim=1)
-        f1_metric.update(preds, true_labels_val)
+    train_df, val_df = train_test_split(
+        train_val_df,
+        test_size=0.2,
+        stratify=train_val_df['type'],
+        random_state=SEED
+    )
 
-final_f1 = f1_metric.compute().item()
-print(f"Final Average F1 Score: {final_f1:.4f}")
+    print(f"Train size: {len(train_df)}")
+    print(f"Validation size: {len(val_df)}")
+    print(f"Test size: {len(test_df)}")
 
+    dataset = CarsDataset(data=data, mode='train', img_size=IMG_SIZE)
 
+    train_dataset = CarsDataset(data=train_df, mode='train', img_size=IMG_SIZE)
+    val_dataset = CarsDataset(data=val_df, mode='val', img_size=IMG_SIZE)
+    test_dataset = CarsDataset(data=test_df, mode='test', img_size=IMG_SIZE)
+    train_labels = train_dataset.data['type']
 
+    print(f'Размер датасета train: {len(train_dataset)}')
+    print(f'Размер датасета test: {len(test_dataset)}')
+    print(f'Размер датасета val: {len(val_dataset)}')
+
+    train_loader = make_weighted_loader(
+        train_dataset,
+        train_labels,
+        batch_size=BATCH_SIZE,
+        drop_last=True
+    )
+    val_loader = DataLoader(
+        val_dataset,
+        batch_size=BATCH_SIZE,
+        shuffle=False,
+        drop_last=True
+    )
+    test_loader = DataLoader(
+        test_dataset,
+        batch_size=BATCH_SIZE,
+        shuffle=False,
+        drop_last=True
+    )
+
+    model = CustomResNet18(num_classes=NUM_CLASSES)
+    print(model)
+
+    config_res18_last_seq = Config(
+        model_name = 'try_start_train',
+        batch_size = 256,
+        n_epochs = 2,
+        eval_every = 200,
+        lr = 1e-3
+    )
+
+    # Инициализация модели
+    model = CustomResNet18(num_classes=NUM_CLASSES)
+
+    # Запуск обучения с нуля
+    res = train_loop(
+        model=model,
+        train_loader=train_loader,
+        val_loader=val_loader,
+        config=config_res18_last_seq
+    )
+
+    # Продолжение обучения
+    model = CustomResNet18(num_classes=NUM_CLASSES)
+    checkpoint = load_checkpoint(model, checkpoint_path='cur_checkpoint.pt')
+
+    # Запуск дообучения
+    res = train_loop(
+        model=model,
+        train_loader=train_loader,
+        val_loader=val_loader,
+        checkpoint=checkpoint
+    )
+
+    device = torch.device("cuda" if train_on_gpu else "cpu")
+    model = CustomResNet18(num_classes=NUM_CLASSES)
+    model.load_state_dict(torch.load('best_model_val_p_0.7876_r_0,7865_f1_0,7856.pt'))
+    model.to(device)
+    model.eval()
+
+    f1_metric = F1Score(task='multiclass', num_classes=NUM_CLASSES, average='macro').to(device)
+
+    with torch.no_grad():
+        for i, (img_batch_val, true_labels_val) in enumerate(test_loader):
+            img_batch_val, true_labels_val = img_batch_val.to(device), true_labels_val.to(device)
+            outputs = model(img_batch_val)
+            predictions = torch.argmax(outputs, dim=1)
+            f1_metric.update(predictions, true_labels_val)
+
+    final_f1 = f1_metric.compute().item()
+    print(f"Final Average F1 Score: {final_f1:.4f}")
