@@ -1,9 +1,9 @@
+from api.v1.api_route import router, Config
+
 import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
-
-from api.v1.api_route import router
 
 app = FastAPI(title='Vehicle Classification API')
 

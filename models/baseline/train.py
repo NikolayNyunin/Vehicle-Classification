@@ -15,12 +15,12 @@ from typing import Callable, Type, Optional
 from dataclasses import dataclass
 from collections import Counter
 
-train_on_gpu = torch.cuda.is_available()
+CUDA = torch.cuda.is_available()
 
-if not train_on_gpu:
-    print('CUDA is not available')
-else:
-    print('CUDA is available!')
+# if not train_on_gpu:
+#     print('CUDA is not available')
+# else:
+#     print('CUDA is available!')
 
 SEED = 42
 NUM_CLASSES = 10
@@ -358,12 +358,11 @@ class CustomResNet18(nn.Module):
         return x
 
 
-def load_model() -> torch.nn.Module:
+def load_model(checkpoint_path: str) -> torch.nn.Module:
     """Загрузка модели из чекпоинта."""
 
     model = CustomResNet18(num_classes=NUM_CLASSES)
-    checkpoint = torch.load('../../data/best_checkpoint_val_p_0.8277_r_0.7873_f1_0.8043.pt',
-                            map_location=torch.device('cuda' if train_on_gpu else 'cpu'))
+    checkpoint = torch.load(checkpoint_path, map_location=torch.device('cuda' if CUDA else 'cpu'))
     model.load_state_dict(checkpoint['model_state_dict'])
 
     return model
@@ -455,7 +454,7 @@ if __name__ == '__main__':
         checkpoint=checkpoint
     )
 
-    device = torch.device("cuda" if train_on_gpu else "cpu")
+    device = torch.device("cuda" if CUDA else "cpu")
     model = CustomResNet18(num_classes=NUM_CLASSES)
     model.load_state_dict(torch.load('best_model_val_p_0.7876_r_0,7865_f1_0,7856.pt'))
     model.to(device)
