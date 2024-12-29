@@ -112,21 +112,28 @@ async def fine_tune(request: FineTuneRequest):
     return {'message': f'Model with id {request.id} fine-tuned'}
 
 
-@router.post('/predict', response_model=PredictResponse)
-async def predict(file: UploadFile):
+@router.post('/predict', response_model=List[PredictResponse])
+async def predict(files: List[UploadFile]):
     """Получение предсказаний при помощи модели."""
-
-    if not file.filename.endswith('.jpg'):
-        raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY, detail='Only JPG images are supported')
 
     if not active_model:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='No active model, call /set first')
 
-    try:
-        return inference_one_file(active_model['model_dict']['model'], file.file.read(), 'cuda' if CUDA else 'cpu')
+    predictions = []
 
-    except Exception as e:
-        raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY, detail=str(e).capitalize())
+    for file in files:
+        if not file.filename.endswith(('.png', '.jpg', '.jpeg', '.bmp', '.tiff')):
+            raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY, detail='File type not supported')
+
+        try:
+            prediction = inference_one_file(active_model['model_dict']['model'],
+                                            file.file.read(), 'cuda' if CUDA else 'cpu')
+            predictions.append(prediction)
+
+        except Exception as e:
+            raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY, detail=str(e).capitalize())
+
+    return predictions
 
 
 @router.get('/models', response_model=List[ModelInfo])
