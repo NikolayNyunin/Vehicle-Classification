@@ -22,6 +22,7 @@ torchmetrics = "^1.6.1"
 torchvision = "^0.20.1"
 scikit-learn = "^1.6.0"
 python-multipart = "^0.0.20"
+loguru = "^0.7.3"
 
 
 [build-system]

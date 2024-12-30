@@ -4,6 +4,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
+from loguru import logger
 
 app = FastAPI(title='Vehicle Classification API')
 
@@ -15,6 +16,9 @@ class StatusResponse(BaseModel):
 @app.get('/', response_model=StatusResponse)
 async def root():
     """Получение информации о статусе сервиса."""
+
+    logger.info('"/" requested')
+    logger.success('"/" responded successfully')
 
     return {'status': 'OK'}
 
@@ -30,3 +34,5 @@ app.include_router(router, prefix='/api/v1')
 
 if __name__ == '__main__':
     uvicorn.run('app:app', host='127.0.0.1', port=8000, reload=True)
+
+    logger.info('Uvicorn server started')
