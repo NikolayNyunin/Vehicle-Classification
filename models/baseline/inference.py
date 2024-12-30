@@ -86,7 +86,7 @@ def inference_one_file(model: torch.nn.Module,
 
 
 if __name__ == '__main__':
-    checkpoint_path = "../../data/best_checkpoint_val_p_0.8277_r_0.7873_f1_0.8043.pt"
+    checkpoint_path = "best_checkpoint.pt"
     folder_path = r"C:\Users\Max\Downloads"
     model = CustomResNet18(num_classes=NUM_CLASSES)
     loaded_data = load_checkpoint(model, checkpoint_path=checkpoint_path)

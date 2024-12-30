@@ -51,5 +51,5 @@ if __name__ == '__main__':
         model=CustomResNet18(num_classes=NUM_CLASSES),
         csv_path='data.csv',
         image_folder=r"C:\Users\Max\Downloads\data\folder",
-        checkpoint_path="../../data/best_checkpoint_val_p_0.8277_r_0.7873_f1_0.8043.pt"
+        checkpoint_path="best_checkpoint.pt"
     )

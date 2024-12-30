@@ -21,7 +21,7 @@ def load_baseline_model() -> dict:
 
     name = 'CustomResNet18 (BASELINE)'
     description = '...'
-    model = load_model('../data/best_checkpoint_val_p_0.8277_r_0.7873_f1_0.8043.pt')
+    model = load_model('../models/baseline/best_checkpoint.pt')
     return {'name': name, 'description': description, 'model': model}
 
 
