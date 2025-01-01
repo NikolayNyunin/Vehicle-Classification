@@ -2,7 +2,7 @@ from api.v1.api_route import router
 
 import uvicorn
 from fastapi import FastAPI
-# from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from loguru import logger
 
@@ -23,11 +23,14 @@ async def root():
     return {'status': 'OK'}
 
 
-# @app.get('/favicon.ico', include_in_schema=False)
-# async def favicon():
-#     """Получение иконки приложения."""
-#
-#     return FileResponse('favicon-256x256.png')
+@app.get('/favicon.ico', include_in_schema=False)
+async def favicon():
+    """Получение иконки вкладки."""
+
+    logger.info('"/favicon.ico" requested')
+    logger.success('"/favicon.ico" responded successfully')
+
+    return FileResponse('api/img/favicon.png')
 
 
 app.include_router(router, prefix='/api/v1')
