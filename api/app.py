@@ -1,8 +1,8 @@
-from api.v1.api_route import router, Config
+from api.v1.api_route import router
 
 import uvicorn
 from fastapi import FastAPI
-from fastapi.responses import FileResponse
+# from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from loguru import logger
 

@@ -139,7 +139,7 @@ def save_checkpoint(
         'scheduler_state_dict': scheduler.state_dict() if scheduler else None,
         'step': step,
         'best_f1': best_f1,
-        'config': Config,
+        'config': config,
     }
     torch.save(checkpoint, checkpoint_path)
 
@@ -150,12 +150,13 @@ def load_checkpoint(
 ):
     """Загрузка чекпоинта обучения."""
 
-    checkpoint = torch.load(checkpoint_path)
+    checkpoint = torch.load(checkpoint_path, map_location='cuda' if CUDA else 'cpu')
     config = checkpoint.get('config', None)
-    print(config)
+    # print(config)
 
     if config is None:
-        raise ValueError("Config not found in the checkpoint. Please provide a valid checkpoint.")
+        # raise ValueError("Config not found in the checkpoint. Please provide a valid checkpoint.")
+        config = Config()
 
     optimizer_class_name = checkpoint.get('optimizer_class', None)
     optimizer_class = getattr(optim, optimizer_class_name)

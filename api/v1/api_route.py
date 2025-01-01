@@ -1,4 +1,4 @@
-from models.baseline.train import load_model, Config, CUDA
+from models.baseline.train import load_model, CUDA
 from models.baseline.inference import inference_one_file
 
 from pydantic import BaseModel
@@ -11,7 +11,7 @@ from http import HTTPStatus
 from contextlib import asynccontextmanager
 
 # Добавление файла логов с ротацией
-logger.add('../logs/fastapi.log', rotation='100 MB')
+logger.add('logs/backend.log', rotation='100 MB')
 
 # Сохранённые модели
 saved_models = {}
@@ -25,7 +25,7 @@ def load_baseline_model() -> dict:
 
     name = 'CustomResNet18 (BASELINE)'
     description = '...'
-    model = load_model('../models/baseline/best_checkpoint.pt')
+    model = load_model('models/baseline/best_checkpoint.pt')
     return {'name': name, 'description': description, 'model': model}
 
 
