@@ -98,7 +98,7 @@ def fine_tune_model(model_id: int, name: str, description: str, batch_size: int,
         }
     }
     resp = requests.post(f"{API_URL}/fine_tune", json=payload)
-    if resp.status_code == 200:
+    if resp.status_code == 201:
         return resp.json()
     else:
         st.error(f"Ошибка при дообучении модели: {resp.text}")

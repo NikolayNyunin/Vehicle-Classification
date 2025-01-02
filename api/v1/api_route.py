@@ -132,7 +132,7 @@ async def fit(request: FitRequest):
         return {'message': f'New model trained and saved with id {new_id}'}
 
 
-@router.post('/fine_tune', response_model=MessageResponse)
+@router.post('/fine_tune', response_model=MessageResponse, status_code=HTTPStatus.CREATED)
 async def fine_tune(request: FineTuneRequest):
     """Дообучение существующей модели."""
 
@@ -170,7 +170,7 @@ async def fine_tune(request: FineTuneRequest):
 
 @router.post('/predict', response_model=List[PredictResponse])
 async def predict(files: List[UploadFile]):
-    """Получение предсказаний при помощи модели."""
+    """Получение предсказаний при помощи выбранной модели."""
 
     logger.info('"/predict" requested')
 
@@ -204,7 +204,7 @@ async def predict(files: List[UploadFile]):
 
 @router.get('/models', response_model=List[ModelInfo])
 async def list_models():
-    """Получение списка моделей."""
+    """Получение списка сохранённых моделей."""
 
     logger.info('"/models" requested')
     logger.success('"/models" responded successfully')
