@@ -2,20 +2,13 @@ import streamlit as st
 import requests
 import pandas as pd
 import io
-import logging
-from logging.handlers import RotatingFileHandler
+from loguru import logger
 
 # -----------------------------------------------------------------------------
 # НАСТРОЙКА ЛОГИРОВАНИЯ
 # -----------------------------------------------------------------------------
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-
-# Хендлер для ротации логов: maxBytes=1_000_000 (примерно 1 МБ), хранить 5 файлов
-handler = RotatingFileHandler("logs/app.log", maxBytes=1_000_000, backupCount=5, encoding='utf-8')
-formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(message%s")
-handler.setFormatter(formatter)
-logger.addHandler(handler)
+logger.add("logs/app.log", rotation="1 MB", retention=5, encoding="utf-8", level="INFO",
+           format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}")
 
 # -----------------------------------------------------------------------------
 # КОНФИГ БЭКЕНДА
@@ -29,7 +22,6 @@ API_URL = "http://127.0.0.1:8000/api/v1"
 st.set_page_config(page_title="Vehicle Classification", layout="wide")
 if "dataset" not in st.session_state:
     st.session_state["dataset"] = None  # Чтобы помнить о загруженном датасете
-
 
 # -----------------------------------------------------------------------------
 # ФУНКЦИИ ВЗАИМОДЕЙСТВИЯ С API
@@ -46,7 +38,6 @@ def list_models():
         logger.error(f"Ошибка при /models: {resp.text}")
         return []
 
-
 def set_active_model(model_id: int):
     """
     Устанавливаем активную модель по ID.
@@ -59,7 +50,6 @@ def set_active_model(model_id: int):
         st.error(f"Ошибка при выборе модели: {resp.text}")
         logger.error(f"Ошибка при /set: {resp.text}")
         return None
-
 
 def train_new_model(name: str, description: str, batch_size: int, n_epochs: int, eval_every: int):
     """
@@ -81,7 +71,6 @@ def train_new_model(name: str, description: str, batch_size: int, n_epochs: int,
         st.error(f"Ошибка при обучении модели: {resp.text}")
         logger.error(f"Ошибка при /fit: {resp.text}")
         return None
-
 
 def fine_tune_model(model_id: int, name: str, description: str, batch_size: int, n_epochs: int, eval_every: int):
     """
@@ -105,13 +94,10 @@ def fine_tune_model(model_id: int, name: str, description: str, batch_size: int,
         logger.error(f"Ошибка при /fine_tune: {resp.text}")
         return None
 
-
 def predict(files):
     """
     Запрос инференса у модели. Принимает список файлов (из ст.file_uploader).
     """
-    # В FastAPI эндпоинте /predict ожидается список UploadFile.
-    # Поэтому используем "files=" параметр с кортежем ('file', filelike, 'filename')
     multiple_files = []
     for f in files:
         multiple_files.append(("files", (f.name, f, f.type)))
@@ -123,7 +109,6 @@ def predict(files):
         st.error(f"Ошибка при инференсе: {resp.text}")
         logger.error(f"Ошибка при /predict: {resp.text}")
         return None
-
 
 # -----------------------------------------------------------------------------
 # СТРАНИЦА "ЗАГРУЗКА ДАТАСЕТА" И EDA
@@ -148,7 +133,6 @@ def page_upload_and_eda():
 
         st.subheader("Основные статистики:")
         st.write(st.session_state["dataset"].describe(include='all'))
-
 
 # -----------------------------------------------------------------------------
 # СТРАНИЦА "ОБУЧЕНИЕ / ДООБУЧЕНИЕ"
@@ -209,7 +193,6 @@ def page_training():
                 st.success(ft_result.get("message", "Дообучение завершено"))
                 logger.info(f"Дообучение модели: {ft_result}")
 
-
 # -----------------------------------------------------------------------------
 # СТРАНИЦА "МОДЕЛИ" — СПИСОК И УСТАНОВКА АКТИВНОЙ МОДЕЛИ
 # -----------------------------------------------------------------------------
@@ -233,7 +216,6 @@ def page_models():
             st.success(resp.get("message", "Модель установлена"))
             logger.info(f"Активная модель выбрана: {resp}")
 
-
 # -----------------------------------------------------------------------------
 # СТРАНИЦА "ИНФЕРЕНС"
 # -----------------------------------------------------------------------------
@@ -256,7 +238,6 @@ def page_inference():
         else:
             st.warning("Сначала загрузите хотя бы одно изображение!")
 
-
 # -----------------------------------------------------------------------------
 # ОСНОВНАЯ СТРАНИЦА (НАВИГАЦИЯ)
 # -----------------------------------------------------------------------------
@@ -274,7 +255,6 @@ def main():
         page_models()
     elif choice == "Инференс":
         page_inference()
-
 
 if __name__ == "__main__":
     main()
