@@ -49,8 +49,11 @@
   - Папка `img/` — картинки для визуализации данных.
 - Модуль `models/` — модели машинного обучения.
   - Модуль `baseline/` — бейзлайн-модель.
+    - Файл `baseline.md` — описание модели.
     - Файлы `*.py` — скрипты для взаимодействия с бейзлайн-моделью.
     - Файл `best_checkpoint.pt` — чекпоинт (контрольная точка) обученной модели.
+    - Файлы `*.ipynb` — Jupyter-ноутбуки с обучением и тестированием модели.
+    - Файл `data.csv` — данные для обучения/дообучения baseline-модели.
 - Модуль `api/` — FastAPI-сервис.
   - Модуль `v1/` — первая версия API.
     - Файл `api_route.py` — основной скрипт с описанием методов API.
@@ -93,9 +96,7 @@ docker compose up
 
 Демо:
 
-<img alt="TG demo 1" src="/BOT/demo/demo_1.jpg" width="250"/>
-<img alt="TG demo 2" src="/BOT/demo/demo_2.jpg" width="250"/>
-<img alt="TG demo 3" src="/BOT/demo/demo_3.jpg" width="250"/>
+<img alt="TG demo 1" src="/BOT/demo/demo_1.jpg" width="250"/> <img alt="TG demo 2" src="/BOT/demo/demo_2.jpg" width="250"/> <img alt="TG demo 3" src="/BOT/demo/demo_3.jpg" width="250"/>
 
 ## Установка зависимостей
 
