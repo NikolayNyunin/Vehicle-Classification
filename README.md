@@ -56,6 +56,11 @@
   - Файл `app.py` — корневой скрипт backend-сервиса.
 - Папка `frontend/` — Streamlit-приложение.
   - Файл `streamlit_app.py` — основной скрипт frontend-сервиса.
+- Папка `BOT/` — Telegram бот.
+  - Файл `bot.py` — основной скрипт бота (без токена).
+  - Файл `server.py` — основной скрипт серверной части бота.
+  - Файл `bot_simple.py` — простой скрипт бота (картинка на вход, картинка на выход).
+  - Папка `available_models` — модели машинного обучения (StanfordCarsDataset, ivan).
 - Папка `logs/` — логи приложения.
 - Файлы `backend.Dockerfile` и `frontend.Dockerfile` — конфигурационные файлы Docker.
 - Файл `compose.yaml` — конфигурационный файл Docker Compose.
