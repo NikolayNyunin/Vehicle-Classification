@@ -61,6 +61,7 @@
   - Файл `server.py` — основной скрипт серверной части бота.
   - Файл `bot_simple.py` — простой скрипт бота (картинка на вход, картинка на выход).
   - Папка `available_models` — модели машинного обучения (StanfordCarsDataset, ivan).
+  - Папка `demo` — демонстрация работы бота.
 - Папка `logs/` — логи приложения.
 - Файлы `backend.Dockerfile` и `frontend.Dockerfile` — конфигурационные файлы Docker.
 - Файл `compose.yaml` — конфигурационный файл Docker Compose.
@@ -116,11 +117,12 @@ docker compose up
 
 Демо:
 
-![IMG_9624](https://github.com/user-attachments/assets/ed12326b-ee14-424c-a3d8-169bd93f3a52)  
+<img src="https://github.com/NikolayNyunin/Vehicle-Classification/blob/develop/BOT/demo/IMG_9624.jpg" alt="Demo Screenshot" width="400">
 
-![IMG_9625](https://github.com/user-attachments/assets/0158a7eb-75bf-4eed-a0c1-aa9388d03d01)
+<img src="https://github.com/NikolayNyunin/Vehicle-Classification/blob/develop/BOT/demo/IMG_9625.jpg" alt="Demo Screenshot" width="400">
 
-![IMG_9626](https://github.com/user-attachments/assets/0f18a08e-ef9c-46e3-a2e4-95de90a0077e)
+<img src="https://github.com/NikolayNyunin/Vehicle-Classification/blob/develop/BOT/demo/IMG_9626.jpg" alt="Demo Screenshot" width="400">
+
 
 ## Установка зависимостей
 
