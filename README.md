@@ -13,6 +13,8 @@
 - [Куратор](#куратор)
 - [Структура проекта](#структура-проекта)
 - [Запуск приложения](#запуск-приложения)
+- [Запуск ТГ БОТА](#запуск-ТГ-БОТА)
+- [Использование ТГ БОТА](#использование-ТГ-БОТА)
 - [Установка зависимостей](#установка-зависимостей)
 - [Запуск FastAPI-приложения без Docker](#запуск-fastapi-приложения-без-docker)
 - [Запуск Streamlit-приложения без Docker](#запуск-streamlit-приложения-без-docker)
@@ -89,36 +91,9 @@ docker compose up
 
 ## Использование ТГ БОТА
 
-"""
-Привет! Я бот для обнаружения и классификации автомобилей по типу кузова.
-
-Я могу определить 9 типов машин:
-- Sedan (Седан)
-- SUV (Внедорожник)
-- Coupe (Купе)
-- Convertible (Кабриолет)
-- Hatchback (Хэтчбек)
-- Minivan (Минивэн)
-- Van (Автобус)
-- Truck (Грузовик)
-- Other (Другой тип транспорта)
-
-
-Доступные команды:
-
-- /models: Показать доступные модели (на сервере)
-- /set <имя_модели>: Загрузить выбранную модель
-- /predict: Переключиться в режим обработки фото
-- /stop: Остановить обработку и сбросить настройки
-
-
-Сейчас используется модель: model_3_f1.82.pt
-"""
-
 Демо:
 
 <img src="https://github.com/NikolayNyunin/Vehicle-Classification/blob/develop/BOT/demo/IMG_9624.jpg" alt="Demo Screenshot" width="250"> <img src="https://github.com/NikolayNyunin/Vehicle-Classification/blob/develop/BOT/demo/IMG_9625.jpg" alt="Demo Screenshot" width="250"> <img src="https://github.com/NikolayNyunin/Vehicle-Classification/blob/develop/BOT/demo/IMG_9626.jpg" alt="Demo Screenshot" width="250">
-
 
 ## Установка зависимостей
 
