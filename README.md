@@ -117,11 +117,7 @@ docker compose up
 
 Демо:
 
-<img src="https://github.com/NikolayNyunin/Vehicle-Classification/blob/develop/BOT/demo/IMG_9624.jpg" alt="Demo Screenshot" width="400">
-
-<img src="https://github.com/NikolayNyunin/Vehicle-Classification/blob/develop/BOT/demo/IMG_9625.jpg" alt="Demo Screenshot" width="400">
-
-<img src="https://github.com/NikolayNyunin/Vehicle-Classification/blob/develop/BOT/demo/IMG_9626.jpg" alt="Demo Screenshot" width="400">
+<img src="https://github.com/NikolayNyunin/Vehicle-Classification/blob/develop/BOT/demo/IMG_9624.jpg" alt="Demo Screenshot" width="250"> <img src="https://github.com/NikolayNyunin/Vehicle-Classification/blob/develop/BOT/demo/IMG_9625.jpg" alt="Demo Screenshot" width="250"> <img src="https://github.com/NikolayNyunin/Vehicle-Classification/blob/develop/BOT/demo/IMG_9626.jpg" alt="Demo Screenshot" width="250">
 
 
 ## Установка зависимостей
