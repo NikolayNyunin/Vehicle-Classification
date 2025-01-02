@@ -24,7 +24,16 @@ def load_baseline_model() -> dict:
     """Загрузка бейзлайн-модели."""
 
     name = 'CustomResNet18 (BASELINE)'
-    description = '...'
+    description = \
+        ('Для реализации модели выбрана предобученная нейросеть ResNet18. '
+         'Убран sequential block и добавлен свой со следующими слоями: '
+             'Linear(512, 128), '
+             'BatchNorm1d(128), '
+             'ReLU(), '
+             'Dropout(0.3), '
+             'Linear(128, 10). '
+         'Активен только этот блок, остальные слои заморожены. '
+         'Полученная нейросеть обучалась в течение двух эпох.')
     model = load_model('models/baseline/best_checkpoint.pt')
     return {'name': name, 'description': description, 'model': model}
 
