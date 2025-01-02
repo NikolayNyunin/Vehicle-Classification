@@ -13,8 +13,8 @@
 - [Куратор](#куратор)
 - [Структура проекта](#структура-проекта)
 - [Запуск приложения](#запуск-приложения)
-- [Запуск ТГ БОТА](#запуск-ТГ-БОТА)
-- [Использование ТГ БОТА](#использование-ТГ-БОТА)
+- [Запуск Telegram-бота](#запуск-telegram-бота)
+- [Использование Telegram-бота](#использование-telegram-бота)
 - [Установка зависимостей](#установка-зависимостей)
 - [Запуск FastAPI-приложения без Docker](#запуск-fastapi-приложения-без-docker)
 - [Запуск Streamlit-приложения без Docker](#запуск-streamlit-приложения-без-docker)
@@ -81,18 +81,21 @@ docker compose up
 - Frontend-приложение на Streamlit — http://127.0.0.1:8501 (или http://localhost:8501).
 - Backend-приложение на FastAPI — http://127.0.0.1:8000 (или http://localhost:8000).
 
-## Запуск ТГ БОТА
+## Запуск Telegram-бота
 
-Прежде всего, написать @IVANSOR0KIN в Telegram / тегнуть в беседе группы (токен не был загружен в репозиторий). На данный момент (02/01/25) бот развернут локально. 
+Прежде всего, написать @IVANSOR0KIN в Telegram / тегнуть в беседе группы (токен не был загружен в репозиторий).
+На данный момент (02/01/25) бот развернут локально.
 
 Адрес бота в Telegram:
-@VehicleClassifierBot
+[@VehicleClassifierBot](https://t.me/VehicleClassifierBot)
 
-## Использование ТГ БОТА
+## Использование Telegram-бота
 
 Демо:
 
-<img src="https://github.com/NikolayNyunin/Vehicle-Classification/blob/develop/BOT/demo/IMG_9624.jpg" alt="Demo Screenshot" width="250"> <img src="https://github.com/NikolayNyunin/Vehicle-Classification/blob/develop/BOT/demo/IMG_9625.jpg" alt="Demo Screenshot" width="250"> <img src="https://github.com/NikolayNyunin/Vehicle-Classification/blob/develop/BOT/demo/IMG_9626.jpg" alt="Demo Screenshot" width="250">
+<img alt="TG demo 1" src="/BOT/demo/demo_1.jpg" width="250"/>
+<img alt="TG demo 2" src="/BOT/demo/demo_2.jpg" width="250"/>
+<img alt="TG demo 3" src="/BOT/demo/demo_3.jpg" width="250"/>
 
 ## Установка зависимостей
 
