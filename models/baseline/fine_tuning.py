@@ -1,4 +1,5 @@
-from models.baseline.train import CarsDataset, Config, CustomResNet18, DataLoader, load_checkpoint, train_loop
+from models.baseline.model import CustomResNet18
+from models.baseline.train import CarsDataset, Config, DataLoader, load_checkpoint, train_loop
 
 import pandas as pd
 import torch

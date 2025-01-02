@@ -1,4 +1,4 @@
-from models.baseline.train import load_model, CUDA
+from models.baseline.model import load_model, CUDA
 from models.baseline.inference import inference_one_file
 
 from pydantic import BaseModel

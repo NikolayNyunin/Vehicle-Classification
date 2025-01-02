@@ -1,3 +1,5 @@
+from models.baseline.model import CustomResNet18, CUDA, NUM_CLASSES
+
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
@@ -9,21 +11,17 @@ import torch
 from torch import nn, optim
 from torch.utils.data import Dataset, DataLoader, WeightedRandomSampler
 from torchmetrics.classification import Precision, Recall, F1Score
-from torchvision.models import resnet18
 
 from typing import Callable, Type, Optional
 from dataclasses import dataclass
 from collections import Counter
 
-CUDA = torch.cuda.is_available()
-
-# if not train_on_gpu:
+# if not CUDA:
 #     print('CUDA is not available')
 # else:
 #     print('CUDA is available!')
 
 SEED = 42
-NUM_CLASSES = 10
 IMG_SIZE = 224
 BATCH_SIZE = 256
 
@@ -192,7 +190,7 @@ class Config:
     """Конфигурация."""
 
     # Общие параметры
-    device: str = 'cuda' if torch.cuda.is_available() else 'cpu'
+    device: str = 'cuda' if CUDA else 'cpu'
     model_name: Optional[str] = 'default_name'
 
     # Обучение
@@ -325,48 +323,6 @@ def train_loop(
             config=vars(config),
             checkpoint_path='epoch_checkpoint.pt'
         )
-
-
-class CustomResNet18(nn.Module):
-    def __init__(self, num_classes=NUM_CLASSES):
-        super().__init__()
-
-        self.resnet = resnet18(weights='IMAGENET1K_V1')
-        # Убрали последний линейный слой
-        self.resnet = nn.Sequential(*list(self.resnet.children())[:-1])
-
-        # Сказали, что замораживаем всю сеть
-        for param in self.resnet.parameters():
-            param.requires_grad = False
-
-        # Размораживаем последний sequential block
-        for param in list(self.resnet[-2].parameters()):
-            param.requires_grad = True
-
-        self.flatten = nn.Flatten()
-        self.out = nn.Sequential(
-            nn.Linear(512, 128),
-            nn.BatchNorm1d(128),
-            nn.ReLU(),
-            nn.Dropout(0.3),
-            nn.Linear(128, num_classes)
-        )
-
-    def forward(self, x):
-        x = self.resnet(x)
-        x = self.flatten(x)
-        x = self.out(x)
-        return x
-
-
-def load_model(checkpoint_path: str) -> torch.nn.Module:
-    """Загрузка модели из чекпоинта."""
-
-    model = CustomResNet18(num_classes=NUM_CLASSES)
-    checkpoint = torch.load(checkpoint_path, map_location=torch.device('cuda' if CUDA else 'cpu'))
-    model.load_state_dict(checkpoint['model_state_dict'])
-
-    return model
 
 
 if __name__ == '__main__':

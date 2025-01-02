@@ -1,4 +1,5 @@
-from models.baseline.train import CustomResNet18, NUM_CLASSES, IMG_SIZE, load_checkpoint
+from models.baseline.model import CustomResNet18, NUM_CLASSES
+from models.baseline.train import load_checkpoint, IMG_SIZE
 
 import numpy as np
 import cv2
