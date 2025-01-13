@@ -8,7 +8,7 @@ import os
 # -----------------------------------------------------------------------------
 # НАСТРОЙКА ЛОГИРОВАНИЯ
 # -----------------------------------------------------------------------------
-logger.add("logs/app.log", rotation="1 MB", retention=5, encoding="utf-8", level="INFO",
+logger.add("logs/frontend.log", rotation="100 MB", retention=5, encoding="utf-8", level="INFO",
            format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}")
 
 # -----------------------------------------------------------------------------
@@ -20,7 +20,7 @@ API_URL = os.getenv("BACKEND_URL", "http://127.0.0.1:8000") + "/api/v1"
 # -----------------------------------------------------------------------------
 # ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ПРИЛОЖЕНИЯ
 # -----------------------------------------------------------------------------
-st.set_page_config(page_title="Vehicle Classification", layout="wide")
+st.set_page_config(page_title="Vehicle Classification", page_icon="🚗", layout="wide")
 if "dataset" not in st.session_state:
     st.session_state["dataset"] = None  # Чтобы помнить о загруженном датасете
 
@@ -229,9 +229,9 @@ def page_inference():
 
     if st.button("Получить предсказания"):
         if uploaded_images:
-            preds = predict(uploaded_images)
-            if preds:
-                for i, p in enumerate(preds):
+            predictions = predict(uploaded_images)
+            if predictions:
+                for i, p in enumerate(predictions):
                     st.write(f"**Файл**: {uploaded_images[i].name}")
                     st.write(f"**Предсказанный класс**: {p['class_name']}")
                     st.write(f"**Уверенность**: {p['confidence']:.4f}")
