@@ -42,7 +42,9 @@ def load_model(checkpoint_path: str) -> nn.Module:
     """Загрузка модели из чекпоинта."""
 
     model = CustomResNet18(num_classes=NUM_CLASSES)
-    checkpoint = torch.load(checkpoint_path, map_location=torch.device('cuda' if CUDA else 'cpu'))
+    checkpoint = torch.load(
+        checkpoint_path, map_location=torch.device('cuda' if CUDA else 'cpu')
+    )
     model.load_state_dict(checkpoint['model_state_dict'])
 
     return model

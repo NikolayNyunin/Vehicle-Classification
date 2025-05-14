@@ -29,13 +29,17 @@ def inference_from_folder(folder_path, model, device='cuda'):
     model.to(device)
     for filename in os.listdir(folder_path):
         file_path = os.path.join(folder_path, filename)
-        if not filename.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.tiff')):
+        if not filename.lower().endswith(
+                ('.png', '.jpg', '.jpeg', '.bmp', '.tiff')
+        ):
             continue
         image = cv2.imread(file_path)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         transform = Compose([
-            Resize(height=IMG_SIZE, width=IMG_SIZE, interpolation=cv2.INTER_LINEAR),
-            Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], max_pixel_value=255),
+            Resize(height=IMG_SIZE, width=IMG_SIZE,
+                   interpolation=cv2.INTER_LINEAR),
+            Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225],
+                      max_pixel_value=255),
             ToTensorV2()
         ])
         transformed = transform(image=image)
@@ -50,7 +54,9 @@ def inference_from_folder(folder_path, model, device='cuda'):
 
         plt.figure(figsize=(8, 6))
         plt.imshow(image)
-        plt.title(f"Predicted class: {predicted_label}\nConfidence: {confidence:.2f}")
+        plt.title(
+            f"Predicted class: {predicted_label}\nConfidence: {confidence:.2f}"
+        )
         plt.axis('off')
         plt.show()
 
@@ -68,8 +74,10 @@ def inference_one_file(model: torch.nn.Module,
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
     transform = Compose([
-        Resize(height=IMG_SIZE, width=IMG_SIZE, interpolation=cv2.INTER_LINEAR),
-        Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], max_pixel_value=255),
+        Resize(height=IMG_SIZE, width=IMG_SIZE,
+               interpolation=cv2.INTER_LINEAR),
+        Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225],
+                  max_pixel_value=255),
         ToTensorV2()
     ])
 
@@ -83,7 +91,8 @@ def inference_one_file(model: torch.nn.Module,
         confidence = probs[0, predicted_class].item()
     predicted_label = TYPE_DICT.get(predicted_class, "Unknown")
 
-    return {'class_id': predicted_class, 'class_name': predicted_label, 'confidence': confidence}
+    return {'class_id': predicted_class, 'class_name': predicted_label,
+            'confidence': confidence}
 
 
 if __name__ == '__main__':

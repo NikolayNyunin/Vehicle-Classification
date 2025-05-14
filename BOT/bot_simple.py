@@ -24,6 +24,7 @@ logging.basicConfig(
     level=logging.INFO
 )
 
+
 def draw_boxes_opencv(image_path, results):
     """Draw bounding boxes using OpenCV (for YOLOv5)."""
     image = cv2.imread(image_path)
@@ -47,8 +48,10 @@ def draw_boxes_opencv(image_path, results):
     cv2.imwrite(annotated_path, image)
     return annotated_path
 
+
 async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handles incoming photo, runs YOLO inference, and sends back annotated image."""
+    """Handles incoming photo, runs YOLO inference,
+    and sends back annotated image."""
     if not update.message.photo:
         return
 
@@ -63,6 +66,7 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_photo(photo=open(annotated_path, "rb"))
 
+
 def main():
     """Start the bot using ApplicationBuilder (python-telegram-bot v20+)."""
     app = ApplicationBuilder().token(TOKEN).build()
@@ -70,6 +74,7 @@ def main():
     app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
 
     app.run_polling()
+
 
 if __name__ == "__main__":
     main()

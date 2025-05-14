@@ -1,4 +1,4 @@
-#server.py
+# server.py
 import os
 import torch
 from fastapi import FastAPI, File, UploadFile, Query, HTTPException
@@ -17,6 +17,7 @@ model = torch.hub.load(
     source='local'
 )
 
+
 @app.get("/models")
 def list_models():
     models_dir = "available_models"
@@ -27,9 +28,13 @@ def list_models():
         return {"error": "В папке нет моделей (.pt-файлов)."}
     return {"models": pt_files, "current": current_model_name}
 
+
 @app.post("/set")
 def set_model(
-    model_param: str = Query(..., alias="model", description="Имя pt-файла, например model_1_f1.29.pt")
+    model_param: str = Query(
+        ..., alias="model",
+        description="Имя pt-файла, например model_1_f1.29.pt"
+    )
 ):
     """
     Загрузка новой модели по имени.
@@ -40,7 +45,8 @@ def set_model(
     model_path = os.path.join(models_dir, model_param)
 
     if not os.path.isfile(model_path):
-        raise HTTPException(status_code=404, detail=f"Файл {model_param} не найден.")
+        raise HTTPException(status_code=404,
+                            detail=f"Файл {model_param} не найден.")
 
     try:
         model = torch.hub.load(
@@ -54,10 +60,12 @@ def set_model(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @app.get("/current")
 def get_current():
     """Возвращает, какая модель сейчас загружена."""
     return {"current_model": current_model_name}
+
 
 @app.post("/predict")
 async def predict(image: UploadFile = File(...)):
@@ -80,6 +88,6 @@ async def predict(image: UploadFile = File(...)):
         })
     return {"boxes": boxes}
 
+
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=5000)
-
