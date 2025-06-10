@@ -1,4 +1,4 @@
-#bot.py
+# bot.py
 import logging
 import os
 import requests
@@ -20,7 +20,8 @@ logging.basicConfig(
 )
 
 WELCOME_MESSAGE = (
-    "Привет! Я бот для обнаружения и классификации автомобилей по типу кузова.\n\n"
+    "Привет! "
+    "Я бот для обнаружения и классификации автомобилей по типу кузова.\n\n"
     "Я могу определить 9 типов машин:\n"
     "- Sedan (Седан)\n"
     "- SUV (Внедорожник)\n"
@@ -47,8 +48,10 @@ NOT_PREDICT_MESSAGE = "Вы не в режиме /predict. Фото не обр�
 
 SERVER_URL = "http://127.0.0.1:5000"  # адрес нашего FastAPI-сервера
 
+
 def start_command(update: Update, context: CallbackContext):
-    """Отправляет приветствие, список команд, и третьим сообщением – текущая модель."""
+    """Отправляет приветствие, список команд,
+    и третьим сообщением – текущая модель."""
     update.message.reply_text(WELCOME_MESSAGE)
     update.message.reply_text(COMMANDS_MESSAGE)
 
@@ -57,19 +60,24 @@ def start_command(update: Update, context: CallbackContext):
         resp.raise_for_status()
         data = resp.json()
         current_model = data.get("current_model", "неизвестно")
-        update.message.reply_text(f"Сейчас используется модель: {current_model}")
+        update.message.reply_text(
+            f"Сейчас используется модель: {current_model}"
+        )
     except Exception as e:
         update.message.reply_text(f"Не удалось узнать текущую модель: {e}")
 
     context.user_data.clear()
 
+
 def predict_command(update: Update, context: CallbackContext):
     context.user_data["predict_mode"] = True
     update.message.reply_text(WAITING_MESSAGE)
 
+
 def stop_command(update: Update, context: CallbackContext):
     context.user_data["predict_mode"] = False
     update.message.reply_text(STOPPED_MESSAGE)
+
 
 def models_command(update: Update, context: CallbackContext):
     """GET /models -> список моделей + текущая."""
@@ -85,7 +93,9 @@ def models_command(update: Update, context: CallbackContext):
         current_model = data.get("current", "неизвестно")
 
         if not pt_files:
-            update.message.reply_text("На сервере не найдено моделей (.pt-файлов).")
+            update.message.reply_text(
+                "На сервере не найдено моделей (.pt-файлов)."
+            )
         else:
             msg = "Доступные модели:\n"
             for m in pt_files:
@@ -96,6 +106,7 @@ def models_command(update: Update, context: CallbackContext):
             update.message.reply_text(msg)
     except requests.RequestException as e:
         update.message.reply_text(f"Ошибка при запросе /models:\n{e}")
+
 
 def set_command(update: Update, context: CallbackContext):
     """
@@ -118,9 +129,12 @@ def set_command(update: Update, context: CallbackContext):
             else:
                 update.message.reply_text(f"Ответ сервера: {data}")
         else:
-            update.message.reply_text(f"Ошибка при загрузке модели: {resp.status_code}\n{resp.text}")
+            update.message.reply_text(
+                f"Ошибка при загрузке модели: {resp.status_code}\n{resp.text}"
+            )
     except requests.RequestException as e:
         update.message.reply_text(f"Ошибка при запросе /set:\n{e}")
+
 
 def call_inference_api(image_path: str):
     """Шлём POST /predict с файлом."""
@@ -128,6 +142,7 @@ def call_inference_api(image_path: str):
         resp = requests.post(f"{SERVER_URL}/predict", files={"image": f})
     resp.raise_for_status()
     return resp.json()
+
 
 def draw_boxes_opencv(image_path: str, boxes: list):
     image = cv2.imread(image_path)
@@ -153,6 +168,7 @@ def draw_boxes_opencv(image_path: str, boxes: list):
     cv2.imwrite(annotated_path, image)
     return annotated_path
 
+
 def handle_photo(update: Update, context: CallbackContext):
     if not context.user_data.get("predict_mode", False):
         update.message.reply_text(NOT_PREDICT_MESSAGE)
@@ -173,6 +189,7 @@ def handle_photo(update: Update, context: CallbackContext):
     except requests.RequestException as e:
         update.message.reply_text(f"Ошибка при запросе /predict:\n{e}")
 
+
 def main():
     updater = Updater(TOKEN, use_context=True)
     dp = updater.dispatcher
@@ -187,6 +204,7 @@ def main():
 
     updater.start_polling()
     updater.idle()
+
 
 if __name__ == "__main__":
     main()

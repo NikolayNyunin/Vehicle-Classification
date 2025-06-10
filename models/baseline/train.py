@@ -52,15 +52,18 @@ class CarsDataset(Dataset):
 
     def test_transforms(self):
         transforms = A.Compose([
-            A.Resize(height=self.img_size, width=self.img_size, interpolation=cv2.INTER_LINEAR),
-            A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], max_pixel_value=255),
+            A.Resize(height=self.img_size, width=self.img_size,
+                     interpolation=cv2.INTER_LINEAR),
+            A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225],
+                        max_pixel_value=255),
             ToTensorV2()
         ])
         return transforms
 
     def train_transforms(self):
         transforms = A.Compose([
-            A.Resize(height=self.img_size, width=self.img_size, interpolation=cv2.INTER_LINEAR),
+            A.Resize(height=self.img_size, width=self.img_size,
+                     interpolation=cv2.INTER_LINEAR),
 
             # Горизонтальное отражение
             A.HorizontalFlip(p=0.3),
@@ -69,7 +72,8 @@ class CarsDataset(Dataset):
             A.Rotate(limit=40, p=0.3),
 
             # Случайное изменение яркости и контраста
-            A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=0.3),
+            A.RandomBrightnessContrast(brightness_limit=0.2,
+                                       contrast_limit=0.2, p=0.3),
 
             # Эффект размытия
             A.Blur(blur_limit=(3, 7), p=0.3),
@@ -77,7 +81,8 @@ class CarsDataset(Dataset):
             # Случайное зануление прямоугольных областей
             A.CoarseDropout(max_holes=3, max_height=40, max_width=40, p=0.3),
 
-            A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], max_pixel_value=255),
+            A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225],
+                        max_pixel_value=255),
             ToTensorV2()
         ])
 
@@ -106,10 +111,13 @@ def make_weighted_loader(dataset, labels, batch_size, drop_last):
     """Функция для сэмплирования с учетом дисбаланса классов."""
 
     label_counts = Counter(labels)
-    label_weights = {label: 1.0 / count for label, count in label_counts.items()}
+    label_weights = {
+        label: 1.0 / count for label, count in label_counts.items()
+    }
     sample_weights = np.array([label_weights[label] for label in labels])
     num_samples = 10 * max(label_counts.values())
-    sampler = WeightedRandomSampler(sample_weights, num_samples=num_samples, replacement=True)
+    sampler = WeightedRandomSampler(sample_weights, num_samples=num_samples,
+                                    replacement=True)
     train_loader = DataLoader(
         dataset,
         batch_size=batch_size,
@@ -148,12 +156,15 @@ def load_checkpoint(
 ):
     """Загрузка чекпоинта обучения."""
 
-    checkpoint = torch.load(checkpoint_path, map_location='cuda' if CUDA else 'cpu')
+    checkpoint = torch.load(
+        checkpoint_path, map_location='cuda' if CUDA else 'cpu'
+    )
     config = checkpoint.get('config', None)
     # print(config)
 
     if config is None:
-        # raise ValueError("Config not found in the checkpoint. Please provide a valid checkpoint.")
+        # raise ValueError("Config not found in the checkpoint. "
+        #                  "Please provide a valid checkpoint.")
         config = Config()
 
     optimizer_class_name = checkpoint.get('optimizer_class', None)
@@ -166,8 +177,8 @@ def load_checkpoint(
     scheduler = None
     if config.scheduler:
         scheduler = config.scheduler(
-            optimizer, 
-            step_size=config.scheduler_step_size, 
+            optimizer,
+            step_size=config.scheduler_step_size,
             gamma=config.scheduler_gamma
         )
 
@@ -200,9 +211,13 @@ class Config:
     lr: float = 1e-3
 
     optimizer: Type[torch.optim.Optimizer] = torch.optim.Adam
-    loss_func: Callable[[torch.Tensor, torch.Tensor], torch.Tensor] = nn.CrossEntropyLoss()
+    loss_func: Callable[[torch.Tensor, torch.Tensor], torch.Tensor] = (
+        nn.CrossEntropyLoss()
+    )
 
-    scheduler: Optional[Type[torch.optim.lr_scheduler._LRScheduler]] = torch.optim.lr_scheduler.StepLR
+    scheduler: Optional[Type[torch.optim.lr_scheduler._LRScheduler]] = (
+        torch.optim.lr_scheduler.StepLR
+    )
     scheduler_step_size: int = 1
     scheduler_gamma: float = 0.5
 
@@ -217,7 +232,9 @@ def train_loop(
     """Обучение модели."""
 
     if config is None and checkpoint is None:
-        raise ValueError("Config cannot be None when initializing without a checkpoint!")
+        raise ValueError(
+            "Config cannot be None when initializing without a checkpoint!"
+        )
 
     if checkpoint is not None:
         model = checkpoint['model']
@@ -230,7 +247,8 @@ def train_loop(
         optimizer = config.optimizer(model.parameters(), lr=config.lr)
         scheduler_step_size = config.scheduler_step_size
         scheduler_gamma = config.scheduler_gamma
-        scheduler = config.scheduler(optimizer, step_size=scheduler_step_size, gamma=scheduler_gamma)
+        scheduler = config.scheduler(optimizer, step_size=scheduler_step_size,
+                                     gamma=scheduler_gamma)
         step = 0
         best_f1 = -float('inf')
 
@@ -238,9 +256,12 @@ def train_loop(
     device = config.device
 
     # Метрики
-    precision_metric = Precision(task='multiclass', num_classes=NUM_CLASSES, average='macro').to(device)
-    recall_metric = Recall(task='multiclass', num_classes=NUM_CLASSES, average='macro').to(device)
-    f1_metric = F1Score(task='multiclass', num_classes=NUM_CLASSES, average='macro').to(device)
+    precision_metric = Precision(task='multiclass', num_classes=NUM_CLASSES,
+                                 average='macro').to(device)
+    recall_metric = Recall(task='multiclass', num_classes=NUM_CLASSES,
+                           average='macro').to(device)
+    f1_metric = F1Score(task='multiclass', num_classes=NUM_CLASSES,
+                        average='macro').to(device)
 
     model.to(device)
     # Отправляем оптимизатор на устройство
@@ -254,9 +275,12 @@ def train_loop(
 
         for i, (img_batch, true_labels) in enumerate(tqdm(train_loader)):
             step += 1
-            img_batch, true_labels = img_batch.to(device), true_labels.to(device)
+            img_batch, true_labels = (
+                img_batch.to(device),
+                true_labels.to(device)
+            )
             true_labels = true_labels.to(torch.long)
-            
+
             optimizer.zero_grad()
             pred_labels = model(img_batch)
             loss_train = loss_func(pred_labels, true_labels)
@@ -272,8 +296,12 @@ def train_loop(
                 f1_metric.reset()
 
                 with torch.no_grad():
-                    for j, (img_batch_val, true_labels_val) in enumerate(val_loader):
-                        img_batch_val, true_labels_val = img_batch_val.to(device), true_labels_val.to(device)
+                    for j, (img_batch_val,
+                            true_labels_val) in enumerate(val_loader):
+                        img_batch_val, true_labels_val = (
+                            img_batch_val.to(device),
+                            true_labels_val.to(device)
+                        )
                         outputs = model(img_batch_val)
                         loss_val = loss_func(outputs, true_labels_val)
                         val_loss_total += loss_val.item()
@@ -291,7 +319,9 @@ def train_loop(
                 recall = recall_metric.compute().item()
                 f1 = f1_metric.compute().item()
 
-                print(f"Step {step}: Val Loss={avg_val_loss:.4f}, Precision={precision:.4f}, Recall={recall:.4f}, F1={f1:.4f}")
+                print(f"Step {step}: Val Loss={avg_val_loss:.4f}, "
+                      f"Precision={precision:.4f}, "
+                      f"Recall={recall:.4f}, F1={f1:.4f}")
                 if f1 > best_f1:
                     best_f1 = f1
                     save_checkpoint(
@@ -300,7 +330,9 @@ def train_loop(
                         step=step,
                         best_f1=best_f1,
                         config=vars(config),
-                        checkpoint_path=f"best_checkpoint_val_p_{precision:.4f}_r_{recall:.4f}_f1_{f1:.4f}.pt"
+                        checkpoint_path="best_checkpoint_val"
+                                        f"_p_{precision:.4f}_r_"
+                                        f"{recall:.4f}_f1_{f1:.4f}.pt"
                     )
                     print(f"New best model saved with F1={f1:.4f}")
                 model.train()
@@ -326,7 +358,9 @@ def train_loop(
 
 
 if __name__ == '__main__':
-    data = pd.read_csv('data.csv', index_col=0).reset_index(drop=True)
+    data = pd.read_csv(
+        'data.csv', index_col=0
+    ).reset_index(drop=True)
     data['type'] -= 1
 
     train_val_df, test_df = train_test_split(
@@ -381,11 +415,11 @@ if __name__ == '__main__':
     print(model)
 
     config_res18_last_seq = Config(
-        model_name = 'try_start_train',
-        batch_size = 256,
-        n_epochs = 2,
-        eval_every = 200,
-        lr = 1e-3
+        model_name='try_start_train',
+        batch_size=256,
+        n_epochs=2,
+        eval_every=200,
+        lr=1e-3
     )
 
     # Инициализация модели
@@ -413,15 +447,20 @@ if __name__ == '__main__':
 
     device = torch.device("cuda" if CUDA else "cpu")
     model = CustomResNet18(num_classes=NUM_CLASSES)
-    model.load_state_dict(torch.load('best_model_val_p_0.7876_r_0,7865_f1_0,7856.pt'))
+    model.load_state_dict(
+        torch.load('best_model_val_p_0.7876_r_0,7865_f1_0,7856.pt')
+    )
     model.to(device)
     model.eval()
 
-    f1_metric = F1Score(task='multiclass', num_classes=NUM_CLASSES, average='macro').to(device)
+    f1_metric = F1Score(task='multiclass', num_classes=NUM_CLASSES,
+                        average='macro').to(device)
 
-    with torch.no_grad():
+    with (torch.no_grad()):
         for i, (img_batch_val, true_labels_val) in enumerate(test_loader):
-            img_batch_val, true_labels_val = img_batch_val.to(device), true_labels_val.to(device)
+            img_batch_val, true_labels_val = (
+                img_batch_val.to(device), true_labels_val.to(device)
+            )
             outputs = model(img_batch_val)
             predictions = torch.argmax(outputs, dim=1)
             f1_metric.update(predictions, true_labels_val)

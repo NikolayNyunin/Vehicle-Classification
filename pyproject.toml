@@ -25,6 +25,7 @@ torchvision = "^0.20.1"
 scikit-learn = "^1.6.0"
 python-multipart = "^0.0.20"
 opencv-python-headless = "^4.10.0.84"
+python-telegram-bot = "^22.0"
 
 [tool.poetry.group.frontend.dependencies]
 streamlit = "^1.41.1"

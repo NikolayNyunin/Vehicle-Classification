@@ -27,11 +27,11 @@ def load_baseline_model() -> dict:
     description = \
         ('Для реализации модели выбрана предобученная нейросеть ResNet18. '
          'Убран sequential block и добавлен свой со следующими слоями: '
-             'Linear(512, 128), '
-             'BatchNorm1d(128), '
-             'ReLU(), '
-             'Dropout(0.3), '
-             'Linear(128, 10). '
+         'Linear(512, 128), '
+         'BatchNorm1d(128), '
+         'ReLU(), '
+         'Dropout(0.3), '
+         'Linear(128, 10). '
          'Активен только этот блок, остальные слои заморожены. '
          'Полученная нейросеть обучалась в течение двух эпох.')
     model = load_model('models/baseline/best_checkpoint.pt')
@@ -111,7 +111,8 @@ class MessageResponse(BaseModel):
     message: str  # Сообщение
 
 
-@router.post('/fit', response_model=MessageResponse, status_code=HTTPStatus.CREATED)
+@router.post('/fit',
+             response_model=MessageResponse, status_code=HTTPStatus.CREATED)
 async def fit(request: FitRequest):
     """Обучение и сохранение новой модели."""
 
@@ -120,7 +121,7 @@ async def fit(request: FitRequest):
     json_request = jsonable_encoder(request)
     name = json_request['name']
     description = json_request['description']
-    hyperparameters = json_request['hyperparameters']
+    # hyperparameters = json_request['hyperparameters']
 
     try:
         # TODO: add model training
@@ -130,18 +131,22 @@ async def fit(request: FitRequest):
     except Exception as e:
         logger.error(f'"/fit" failed: {str(e).capitalize()}')
 
-        raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY, detail=str(e).capitalize())
+        raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY,
+                            detail=str(e).capitalize())
 
     else:
         new_id = max(saved_models.keys()) + 1
-        saved_models[new_id] = {'name': name, 'description': description, 'model': new_model}
+        saved_models[new_id] = {
+            'name': name, 'description': description, 'model': new_model
+        }
 
         logger.success('"/fit" responded successfully')
 
         return {'message': f'New model trained and saved with id {new_id}'}
 
 
-@router.post('/fine_tune', response_model=MessageResponse, status_code=HTTPStatus.CREATED)
+@router.post('/fine_tune',
+             response_model=MessageResponse, status_code=HTTPStatus.CREATED)
 async def fine_tune(request: FineTuneRequest):
     """Дообучение существующей модели."""
 
@@ -151,12 +156,15 @@ async def fine_tune(request: FineTuneRequest):
     model_id = json_request['id']
     name = json_request['name']
     description = json_request['description']
-    hyperparameters = json_request['hyperparameters']
+    # hyperparameters = json_request['hyperparameters']
 
     if model_id not in saved_models:
-        logger.error(f'"/fine_tune" failed: Model with id {model_id} not found')
+        logger.error(
+            f'"/fine_tune" failed: Model with id {model_id} not found'
+        )
 
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=f'Model with id {model_id} not found')
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
+                            detail=f'Model with id {model_id} not found')
 
     try:
         # TODO: add model fine tuning
@@ -166,15 +174,19 @@ async def fine_tune(request: FineTuneRequest):
     except Exception as e:
         logger.error(f'"/fine_tune" failed: {str(e).capitalize()}')
 
-        raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY, detail=str(e).capitalize())
+        raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY,
+                            detail=str(e).capitalize())
 
     else:
         new_id = max(saved_models.keys()) + 1
-        saved_models[new_id] = {'name': name, 'description': description, 'model': new_model}
+        saved_models[new_id] = {
+            'name': name, 'description': description, 'model': new_model
+        }
 
         logger.success('"/fine_tune" responded successfully')
 
-        return {'message': f'Model with id {model_id} fine-tuned and saved with id {new_id}'}
+        return {'message': f'Model with id {model_id} fine-tuned '
+                           f'and saved with id {new_id}'}
 
 
 @router.post('/predict', response_model=List[PredictResponse])
@@ -186,25 +198,32 @@ async def predict(files: List[UploadFile]):
     if not active_model:
         logger.error('"/predict" failed: No active model')
 
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='No active model, call /set first')
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
+                            detail='No active model, call /set first')
 
     predictions = []
 
     for file in files:
-        if not file.filename.endswith(('.png', '.jpg', '.jpeg', '.bmp', '.tiff')):
-            logger.error(f'"/predict" failed: File type not supported')
+        if not file.filename.endswith(
+                ('.png', '.jpg', '.jpeg', '.bmp', '.tiff')
+        ):
+            logger.error('"/predict" failed: File type not supported')
 
-            raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY, detail='File type not supported')
+            raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY,
+                                detail='File type not supported')
 
         try:
-            prediction = inference_one_file(active_model['model_dict']['model'],
-                                            file.file.read(), 'cuda' if CUDA else 'cpu')
+            prediction = inference_one_file(
+                active_model['model_dict']['model'],
+                file.file.read(), 'cuda' if CUDA else 'cpu'
+            )
             predictions.append(prediction)
 
         except Exception as e:
             logger.error(f'"/predict" failed: {str(e).capitalize()}')
 
-            raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY, detail=str(e).capitalize())
+            raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY,
+                                detail=str(e).capitalize())
 
     logger.success('"/predict" responded successfully')
 
@@ -237,7 +256,8 @@ async def set_model(request: SetRequest):
     if request.id not in saved_models:
         logger.error(f'"/set" failed: Model with id {request.id} not found')
 
-        raise HTTPException(HTTPStatus.NOT_FOUND, f'Model with id {request.id} not found')
+        raise HTTPException(HTTPStatus.NOT_FOUND,
+                            f'Model with id {request.id} not found')
 
     active_model['id'] = request.id
     active_model['model_dict'] = saved_models[request.id]

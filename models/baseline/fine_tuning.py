@@ -1,5 +1,7 @@
 from models.baseline.model import CustomResNet18
-from models.baseline.train import CarsDataset, Config, DataLoader, load_checkpoint, train_loop
+from models.baseline.train import (
+    CarsDataset, Config, DataLoader, load_checkpoint, train_loop
+)
 
 import pandas as pd
 import torch
@@ -18,7 +20,9 @@ def fine_tune_model(model: torch.nn.Module,
     """Функция для дообучения модели на пользовательских данных."""
 
     data = pd.read_csv(csv_path)
-    data['file_path'] = data['image_name'].apply(lambda x: f"{image_folder}/{x}")
+    data['file_path'] = data['image_name'].apply(
+        lambda x: f"{image_folder}/{x}"
+    )
     data['type'] -= 1
     train_dataset = CarsDataset(data=data, mode='train', img_size=IMG_SIZE)
 
@@ -31,7 +35,9 @@ def fine_tune_model(model: torch.nn.Module,
 
     try:
         model.to(device)
-        loaded_checkpoint = load_checkpoint(model, checkpoint_path=checkpoint_path)
+        loaded_checkpoint = load_checkpoint(
+            model, checkpoint_path=checkpoint_path
+        )
         model = loaded_checkpoint['model']
         print("Загружен предыдущий чекпоинт для дообучения.")
         train_loop(
