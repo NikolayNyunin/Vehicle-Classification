@@ -44,5 +44,3 @@ Tesla Model S 2012 года выпуска или BMW M3 coupe 2012 года в�
 - Sedan
 - Truck
 - Van
-
-## 3. Датасет [MIO-TCD](https://tcd.miovision.com/)
