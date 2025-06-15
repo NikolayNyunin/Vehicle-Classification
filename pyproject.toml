@@ -1,34 +1,29 @@
 [tool.poetry]
 name = "vehicle-classification"
 version = "0.1.0"
-description = ""
+description = "Vehicle classification and detection project"
 authors = ["Nikolay Nyunin <nikolay.nyunin@gmail.com>"]
 readme = "README.md"
+packages = [{include = "vehicle_classification"}]
 
 [tool.poetry.dependencies]
 python = "^3.12"
-pandas = "^2.2.3"
-tqdm = "^4.66.6"
-matplotlib = "^3.9.2"
-loguru = "^0.7.3"
-
-[tool.poetry.group.analytics.dependencies]
-jupyter = "^1.1.1"
-
-[tool.poetry.group.backend.dependencies]
-fastapi = "^0.115.6"
-uvicorn = "^0.34.0"
-torch = "^2.5.1"
-albumentations = "^1.4.24"
-torchmetrics = "^1.6.1"
-torchvision = "^0.20.1"
-scikit-learn = "^1.6.0"
-python-multipart = "^0.0.20"
-opencv-python-headless = "^4.10.0.84"
-python-telegram-bot = "^22.0"
-
-[tool.poetry.group.frontend.dependencies]
-streamlit = "^1.41.1"
+python-telegram-bot = {version = "20.7", extras = ["ext"]}
+fastapi = "^0.104.1"
+uvicorn = {extras = ["standard"], version = "^0.24.0"}
+python-multipart = "^0.0.6"
+torch = "^2.3.1"
+torchvision = "^0.18.1"
+opencv-python = "^4.8.1"
+Pillow = "^10.1.0"
+requests = "^2.31.0"
+httpx = "^0.25.2"
+python-dotenv = "^0.21.0"
+PyYAML = "^6.0.1"
+matplotlib = "^3.8.2"
+numpy = "^1.26.4"
+pandas = "^2.1.4"
+seaborn = "^0.13.0"
 
 [build-system]
 requires = ["poetry-core"]
